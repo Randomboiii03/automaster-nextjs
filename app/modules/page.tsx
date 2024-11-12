@@ -1,9 +1,9 @@
 import React from 'react'
 
-const UserPage = () => {
+const ModulesPage = () => {
   return (
     <div></div>
   )
 }
 
-export default UserPage
+export default ModulesPage
