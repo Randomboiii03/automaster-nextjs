@@ -1,8 +1,11 @@
 import React from 'react'
+import { Button } from '@radix-ui/themes';
 
 const ModulesPage = () => {
   return (
-    <div></div>
+    <div>
+      <Button>New Module</Button>
+    </div>
   )
 }
 
