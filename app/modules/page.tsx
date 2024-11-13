@@ -1,11 +1,10 @@
-'use client';
+"use client";
 import React, { useEffect, useState } from "react";
-import { Button, Flex, Skeleton } from "@radix-ui/themes";
+import { Button, Flex, Skeleton, TextField } from "@radix-ui/themes";
 import Link from "next/link";
 import axios from "axios";
 import ModuleCard from "../components/ModuleCard";
-import { moduleSchema } from "@/app/validationSchema";
-import { z } from "zod";
+import { FaMagnifyingGlass } from "react-icons/fa6";
 
 type Module = {
   id: number;
@@ -15,18 +14,22 @@ type Module = {
 
 const ModulesPage = () => {
   const [modules, setModules] = useState<Module[]>([]);
+  const [filteredModules, setFilteredModules] = useState<Module[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [searchTerm, setSearchTerm] = useState<string>("");
 
   useEffect(() => {
     async function fetchModules() {
+      const res = await axios.get("/api/modules");
       try {
-        const res = await axios.get("/api/modules");
         console.log(res.data);
         setModules(res.data);
+        setFilteredModules(res.data); // Initialize filteredModules with all modules
       } catch (error) {
-        setError('Failed to fetch posts');
-        console.error(error)
+        setError("Failed to fetch posts");
+        console.log(res.data);
+        console.error(error);
       } finally {
         setLoading(false);
       }
@@ -35,13 +38,37 @@ const ModulesPage = () => {
     fetchModules();
   }, []);
 
+  // Filter modules based on the search term
+  useEffect(() => {
+    if (searchTerm) {
+      setFilteredModules(
+        modules.filter((module) =>
+          module.title.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      );
+    } else {
+      setFilteredModules(modules); // If search term is empty, show all modules
+    }
+  }, [searchTerm, modules]);
+
   return (
     <div className="space-y-4">
-      <Button>
-        <Link href="/modules/new">New Module</Link>
-      </Button>
-      <Flex wrap='wrap' gap='4'>
-      {loading ? (
+      <Flex gap="2" direction="row" justify="end">
+        <TextField.Root
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="Search the modules..."
+        >
+          <TextField.Slot>
+            <FaMagnifyingGlass height="16" width="16" />
+          </TextField.Slot>
+        </TextField.Root>
+        <Button>
+          <Link href="/modules/new">New Module</Link>
+        </Button>
+      </Flex>
+      <Flex wrap="wrap" gap="4">
+        {loading ? (
           // Display Skeletons while loading
           Array.from({ length: 6 }).map((_, index) => (
             <div key={index} className="w-[300px]">
@@ -52,17 +79,18 @@ const ModulesPage = () => {
           ))
         ) : error ? (
           <p>{error}</p>
-        ) : modules.length > 0 ? (
-            modules.map((module) => (
-              <ModuleCard 
+        ) : filteredModules.length > 0 ? (
+          filteredModules.map((module) => (
+            <ModuleCard
               key={module.id}
               title={module.title}
-              description={module.description}/>
-            ))
-          ) : (
-            <p>No modules yet.</p>
-          )}
-        </Flex>
+              description={module.description}
+            />
+          ))
+        ) : (
+          <p>No modules found.</p>
+        )}
+      </Flex>
     </div>
   );
 };
