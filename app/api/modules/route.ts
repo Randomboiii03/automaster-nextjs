@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/prisma/client";
 import { moduleSchema } from "@/app/validationSchema";
 
-// POST: Create a new module
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -34,15 +33,13 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// GET: Fetch all modules or a specific module by ID
 export async function GET(request: NextRequest) {
   try {
-    const id = request.nextUrl.searchParams.get("id"); // Use .get() to access the query parameter
+    const id = request.nextUrl.searchParams.get("id");
 
     if (id) {
-      // Fetch a single module by ID
       const module = await prisma.module.findUnique({
-        where: { id: parseInt(id) }, // Ensure the ID is an integer
+        where: { id: parseInt(id) },
       });
 
       if (!module) {
@@ -54,7 +51,6 @@ export async function GET(request: NextRequest) {
 
       return NextResponse.json(module, { status: 200 });
     } else {
-      // Fetch all modules
       const modules = await prisma.module.findMany();
       return NextResponse.json(modules, { status: 200 });
     }
@@ -68,10 +64,9 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// DELETE: Delete a module by its ID
 export async function DELETE(request: NextRequest) {
   try {
-    const id = request.nextUrl.searchParams.get("id"); // Use .get() to access the query parameter
+    const id = request.nextUrl.searchParams.get("id");
 
     if (!id) {
       return NextResponse.json(
@@ -80,9 +75,9 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Delete the module
+    
     const deletedModule = await prisma.module.delete({
-      where: { id: parseInt(id) }, // Convert the ID to an integer
+      where: { id: parseInt(id) },
     });
 
     return NextResponse.json(deletedModule, { status: 200 });
@@ -95,3 +90,58 @@ export async function DELETE(request: NextRequest) {
     );
   }
 }
+
+export async function PUT(request: NextRequest) {
+    try {
+      const id = request.nextUrl.searchParams.get("id");
+  
+      if (!id) {
+        return NextResponse.json(
+          { error: "Module ID is required" },
+          { status: 400 }
+        );
+      }
+  
+      const body = await request.json();
+  
+      // Validate the input data
+      const validation = moduleSchema.safeParse(body);
+  
+      if (!validation.success) {
+        return NextResponse.json(
+          { error: validation.error.errors },
+          { status: 400 }
+        );
+      }
+  
+      // Check if the module exists
+      const existingModule = await prisma.module.findUnique({
+        where: { id: parseInt(id) }, // Ensure the ID is an integer
+      });
+  
+      if (!existingModule) {
+        return NextResponse.json(
+          { error: `Module with ID ${id} not found` },
+          { status: 404 }
+        );
+      }
+  
+      // Update the module
+      const updatedModule = await prisma.module.update({
+        where: { id: parseInt(id) },
+        data: {
+          title: body.title,
+          description: body.description,
+        },
+      });
+  
+      return NextResponse.json(updatedModule, { status: 200 });
+    } catch (error) {
+      console.error(error);
+  
+      return NextResponse.json(
+        { error: "Something went wrong while updating the module." },
+        { status: 500 }
+      );
+    }
+  }

@@ -1,25 +1,22 @@
 import React from "react";
-import { Box, Card, Flex, Text, Skeleton } from '@radix-ui/themes';
+import { Box, Container } from "@radix-ui/themes";
+import Link from "next/link";
+import { Module } from '@/app/types/module';
 
 type ModuleCardProps = {
-  title: string;
-  description: string;
+  module: Module;
 };
 
-const ModuleCard: React.FC<ModuleCardProps> = ({ title, description }) => {
+const ModuleCard: React.FC<ModuleCardProps> = ({ module }) => {
   return (
-    <div className="w-[300px]">
-      <Flex direction="column" justify='between'>
-          <Box>
-            <Skeleton width="100%" height="200px" />
-            <Text as="div" size="5" weight="bold" wrap='pretty' className="mt-1">
-              {title}
-            </Text>
-            <Text as="div" size="2" color="gray" wrap='pretty'>
-              {description} 
-            </Text>
-          </Box>
-        </Flex>
+    <div className="w-[320px] rounded overflow-hidden shadow-lg">
+      <img className="w-full h-64" src="https://picsum.photos/200/300" alt={module.title || "Module image"} />
+      <div className="px-6 py-4">
+        <Link href={`/modules/${module.id}`}>
+          <div className="font-bold text-lg uppercase">{module.title}</div>
+        </Link>
+        <p className="text-zinc-400 text-sm line-clamp-2">{module.description}</p>
+      </div>
     </div>
   );
 };

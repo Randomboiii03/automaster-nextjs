@@ -14,11 +14,6 @@ import ErrorMessage from "@/app/components/ErrorMessage";
 
 type ModuleForm = z.infer<typeof moduleSchema>;
 
-// interface ModuleForm {
-//     title: string;
-//     description: string;
-// }
-
 const NewModulePage = () => {
   const router = useRouter();
   const {
