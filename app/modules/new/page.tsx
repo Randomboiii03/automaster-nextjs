@@ -1,5 +1,5 @@
 'use client';
-import { TextField, Callout, Button, Text } from '@radix-ui/themes'
+import { TextField, Callout, Button, Spinner } from '@radix-ui/themes'
 import SimpleMDE from "react-simplemde-editor";
 import { useForm, Controller } from 'react-hook-form';
 import "easymde/dist/easymde.min.css";
@@ -26,6 +26,8 @@ const NewModulePage = () => {
     });
     const [error, SetError] = useState('');
 
+    const [isSubmitting, setSubmitting] = useState(false);
+
   return (
     <div className='max-w-xl'>
         { error && <Callout.Root color='red' className='mb-5'>
@@ -38,9 +40,11 @@ const NewModulePage = () => {
         className='max-w-xl space-y-4' 
         onSubmit={handleSubmit(async (data) => { 
             try {
+                setSubmitting(true);
                 await axios.post('/api/modules', data);
                 router.push('/modules');
             } catch (error) {
+                setSubmitting(false);
                 SetError('An unexpected error occured.');
             }
         })}>
@@ -53,7 +57,7 @@ const NewModulePage = () => {
                 render={({ field }) => <SimpleMDE placeholder="Write description..." {...field}/> }
             />
             <ErrorMessage>{errors.description?.message}</ErrorMessage>
-            <Button>Create New Issue</Button>
+            <Button disabled={isSubmitting}>Create New Issue{isSubmitting && <Spinner/>}</Button>
         </form>
     </div>
   )
