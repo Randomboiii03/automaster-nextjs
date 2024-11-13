@@ -1,5 +1,5 @@
 'use client';
-import { TextField, Callout, Button } from '@radix-ui/themes'
+import { TextField, Callout, Button, Text } from '@radix-ui/themes'
 import SimpleMDE from "react-simplemde-editor";
 import { useForm, Controller } from 'react-hook-form';
 import "easymde/dist/easymde.min.css";
@@ -7,15 +7,22 @@ import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { CiCircleInfo } from "react-icons/ci";
+import { zodResolver } from '@hookform/resolvers/zod';
+import { moduleSchema } from '@/app/validationSchema';
+import { z } from 'zod';
 
-interface ModuleForm {
-    title: string;
-    description: string;
-}
+type ModuleForm = z.infer<typeof moduleSchema>;
+
+// interface ModuleForm {
+//     title: string;
+//     description: string;
+// }
 
 const NewModulePage = () => {
     const router = useRouter();
-    const {register, control, handleSubmit} = useForm<ModuleForm>();
+    const {register, control, handleSubmit, formState: { errors }} = useForm<ModuleForm>({
+        resolver: zodResolver(moduleSchema)
+    });
     const [error, SetError] = useState('');
 
   return (
@@ -24,9 +31,7 @@ const NewModulePage = () => {
             <Callout.Icon>
                 <CiCircleInfo />
             </Callout.Icon>
-            <Callout.Text>
-                You will need admin privileges to install and access this application.
-            </Callout.Text>
+            <Callout.Text>{ error }</Callout.Text>
         </Callout.Root>}
         <form 
         className='max-w-xl space-y-4' 
@@ -40,11 +45,13 @@ const NewModulePage = () => {
         })}>
             <TextField.Root placeholder='Title' {...register('title')}>
             </TextField.Root>
+            {errors.title && <Text color='red' as='p'>{errors.title.message}</Text>}
             <Controller
                 name="description"
                 control={control}
                 render={({ field }) => <SimpleMDE placeholder="Write description..." {...field}/> }
             />
+            {errors.description && <Text color='red' as='p'>{errors.description.message}</Text>}
             <Button>Create New Issue</Button>
         </form>
     </div>
